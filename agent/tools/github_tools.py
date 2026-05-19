@@ -77,27 +77,39 @@ class GetFileSummaryInput(BaseModel):
 
 
 def build_github_tools(repo_url: str) -> list:
+    def list_files(path: str = "") -> str:
+        return _list_files(repo_url, path)
+
+    def read_file(path: str) -> str:
+        return _read_file(repo_url, path)
+
+    def search_code(query: str) -> str:
+        return _search_code(repo_url, query)
+
+    def get_file_summary(path: str) -> str:
+        return _get_file_summary(repo_url, path)
+
     return [
         StructuredTool.from_function(
-            func=partial(_list_files, repo_url),
+            func=list_files,
             name="list_files",
             description="List files and directories at a path in the repository.",
             args_schema=ListFilesInput,
         ),
         StructuredTool.from_function(
-            func=partial(_read_file, repo_url),
+            func=read_file,
             name="read_file",
             description="Read the full contents of a file (truncated to AGENT_MAX_FILE_CHARS).",
             args_schema=ReadFileInput,
         ),
         StructuredTool.from_function(
-            func=partial(_search_code, repo_url),
+            func=search_code,
             name="search_code",
             description="Search for a keyword or symbol across the repository using GitHub code search.",
             args_schema=SearchCodeInput,
         ),
         StructuredTool.from_function(
-            func=partial(_get_file_summary, repo_url),
+            func=get_file_summary,
             name="get_file_summary",
             description="Get a short preview (~200 tokens) of a file before deciding to read it fully.",
             args_schema=GetFileSummaryInput,

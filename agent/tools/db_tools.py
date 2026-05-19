@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 
 from django.db.models import Q
 from langchain_core.tools import StructuredTool
@@ -94,21 +93,36 @@ class ListPastSessionsInput(BaseModel):
 
 
 def build_db_tools(session_id: str) -> list:
+    def save_finding(
+        file_path: str,
+        note: str,
+        confidence: float = 0.8,
+        evidence_snippet: str = "",
+        search_term: str = "",
+    ) -> str:
+        return _save_finding(session_id, file_path, note, confidence, evidence_snippet, search_term)
+
+    def get_previous_findings(query: str = "") -> str:
+        return _get_previous_findings(session_id, query)
+
+    def list_past_sessions() -> str:
+        return _list_past_sessions(session_id)
+
     return [
         StructuredTool.from_function(
-            func=partial(_save_finding, session_id),
+            func=save_finding,
             name="save_finding",
             description="Persist a notable finding about a specific file to the database.",
             args_schema=SaveFindingInput,
         ),
         StructuredTool.from_function(
-            func=partial(_get_previous_findings, session_id),
+            func=get_previous_findings,
             name="get_previous_findings",
             description="Retrieve findings saved in past sessions for this repository, ordered by confidence.",
             args_schema=GetPreviousFindingsInput,
         ),
         StructuredTool.from_function(
-            func=partial(_list_past_sessions, session_id),
+            func=list_past_sessions,
             name="list_past_sessions",
             description="List completed research sessions for this repository with their questions and answers.",
             args_schema=ListPastSessionsInput,

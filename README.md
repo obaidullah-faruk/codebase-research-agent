@@ -24,6 +24,37 @@ docker compose logs worker | head -20
 docker compose down
 ```
 
+## Migrations
+
+Run migrations after any model change:
+
+```bash
+# Generate a new migration file (writes to host via volume mount)
+docker compose run --rm -v $(pwd):/app web python manage.py makemigrations
+
+# Apply all pending migrations
+docker compose run --rm web python manage.py migrate
+```
+
+
+## Admin Superuser
+
+Create a superuser so you can log in at `http://localhost:8000/admin/`.
+
+The `.env` file already contains the credentials. Just run:
+
+```bash
+docker compose run --rm web python manage.py createsuperuser --noinput
+```
+
+To change the defaults, edit these three variables in `.env` before running the command:
+
+```env
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@example.com
+DJANGO_SUPERUSER_PASSWORD=changeme
+```
+
 ## Configuration
 
 Edit `.env` to change settings. Only `DJANGO_SECRET_KEY` is required to change for production.

@@ -1,0 +1,30 @@
+# Framework
+Django==6.0.0
+djangorestframework==3.16.0
+django-cors-headers==4.9.0
+django-jazzmin>=3.0
+
+# API docs
+drf-spectacular>=0.27
+
+# Database
+psycopg[binary]>=3.3.4
+dj-database-url>=2.1
+
+# Task queue
+celery>=5.6.3
+redis>=5.0.0
+
+# GitHub client
+PyGithub>=2.9.1
+requests>=2.34.2
+
+# LLM / Agent
+boto3>=1.38.0
+langchain-core>=0.3
+langchain-aws>=0.2
+langchain-ollama>=0.2
+langgraph>=0.2
+
+# Config
+python-dotenv>=1.0.0

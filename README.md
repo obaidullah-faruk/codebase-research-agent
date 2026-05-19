@@ -66,3 +66,18 @@ Edit `.env` to change settings. Only `DJANGO_SECRET_KEY` is required to change f
 | `OLLAMA_BASE_URL` | `http://host.docker.internal:11434` | Ollama server endpoint |
 | `OLLAMA_MODEL` | `qwen2.5:14b` | Ollama model name |
 | `GITHUB_TOKEN` | _(empty)_ | GitHub token — raises rate limit from 60 to 5000 req/hr |
+
+## GitHub Token 
+
+**To create one:**
+
+1. Go to **GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)**
+2. Click **Generate new token (classic)**
+3. Set an expiry and check the **`public_repo`** scope (or **`repo`** for private repos)
+4. Copy the generated token and add it to your `.env`:
+
+```env
+GITHUB_TOKEN=ghp_your_token_here
+```
+
+The agent picks it up automatically — no restart needed if you set it before `docker compose up`.

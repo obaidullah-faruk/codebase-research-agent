@@ -8,6 +8,7 @@ from langchain_core.messages import AIMessage, SystemMessage
 from langgraph.prebuilt import ToolNode
 
 from .state import ResearchState
+from research_sessions.models import ResearchSession, SessionLog, ToolCallLog
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +79,6 @@ def make_tool_node(tools: list, session_id: str) -> callable:
     base_node = ToolNode(tools)
 
     def execute_tools(state: ResearchState) -> dict:
-        from research_sessions.models import ResearchSession, SessionLog, ToolCallLog
-
         session = ResearchSession.objects.get(pk=session_id)
         step = state["iterations"]
         last_ai: AIMessage = state["messages"][-1]

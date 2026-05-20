@@ -4,6 +4,8 @@ from django.db.models import Q
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+from research_sessions.models import Finding, ResearchSession
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +17,6 @@ def _save_finding(
     evidence_snippet: str = "",
     search_term: str = "",
 ) -> str:
-    from research_sessions.models import Finding, ResearchSession
     try:
         session = ResearchSession.objects.select_related("repository").get(pk=session_id)
     except ResearchSession.DoesNotExist:
@@ -34,7 +35,6 @@ def _save_finding(
 
 
 def _get_previous_findings(session_id: str, query: str = "") -> str:
-    from research_sessions.models import Finding, ResearchSession
     try:
         session = ResearchSession.objects.select_related("repository").get(pk=session_id)
     except ResearchSession.DoesNotExist:
@@ -56,7 +56,6 @@ def _get_previous_findings(session_id: str, query: str = "") -> str:
 
 
 def _list_past_sessions(session_id: str) -> str:
-    from research_sessions.models import ResearchSession
     try:
         session = ResearchSession.objects.select_related("repository").get(pk=session_id)
     except ResearchSession.DoesNotExist:

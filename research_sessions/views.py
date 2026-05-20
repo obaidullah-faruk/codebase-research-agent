@@ -1,5 +1,7 @@
 import logging
+import os
 
+from celery.app.control import Control
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiResponse
 from rest_framework import serializers
@@ -7,9 +9,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config.celery import app as celery_app
+
 from .models import ResearchSession
 from .serializers import ResearchSessionSerializer
 from .services import create_session
+
+
+def _is_valid_repo_source(value: str) -> bool:
+    return value.startswith(("https://github.com/", "http://github.com/")) or os.path.isabs(value)
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +45,11 @@ class SessionListCreateView(APIView):
         errors = {}
         if not repo_url:
             errors["repo_url"] = "This field is required."
+        elif not _is_valid_repo_source(repo_url):
+            errors["repo_url"] = (
+                "Provide a GitHub URL (https://github.com/owner/repo) "
+                "or an absolute local path (/path/to/repo)."
+            )
         if not question:
             errors["question"] = "This field is required."
         if errors:
@@ -83,8 +96,6 @@ class SessionCancelView(APIView):
         if session.status not in (ResearchSession.Status.PENDING, ResearchSession.Status.RUNNING):
             return Response({"detail": "Session is not active."}, status=status.HTTP_400_BAD_REQUEST)
 
-        from celery.app.control import Control
-        from config.celery import app as celery_app
         Control(celery_app).revoke(str(session.pk), terminate=True)
 
         session.status = ResearchSession.Status.FAILED

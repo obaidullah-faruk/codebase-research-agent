@@ -1,3 +1,4 @@
+import os
 from rest_framework import serializers
 from .models import ResearchSession, Finding, ToolCallLog, SessionLog
 
@@ -22,6 +23,17 @@ class SessionLogSerializer(serializers.ModelSerializer):
 
 class ResearchSessionSerializer(serializers.ModelSerializer):
     repo_url = serializers.CharField(write_only=True)
+
+    def validate_repo_url(self, value: str) -> str:
+        value = value.strip()
+        if value.startswith(("https://github.com/", "http://github.com/")):
+            return value
+        if os.path.isabs(value):
+            return value
+        raise serializers.ValidationError(
+            "Provide a GitHub URL (https://github.com/owner/repo) "
+            "or an absolute local path (/path/to/repo)."
+        )
     repository_url = serializers.CharField(source="repository.url", read_only=True)
     repository_name = serializers.CharField(source="repository.name", read_only=True)
     findings = FindingSerializer(many=True, read_only=True)

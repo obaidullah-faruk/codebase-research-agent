@@ -1,9 +1,23 @@
+import os
 import uuid
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
+def _validate_repo_source(value: str) -> None:
+    """Accept GitHub URLs or absolute local paths; reject everything else."""
+    if value.startswith(("https://github.com/", "http://github.com/")):
+        return
+    if os.path.isabs(value):
+        return
+    raise ValidationError(
+        "Enter a GitHub URL (https://github.com/owner/repo) "
+        "or an absolute local path (/path/to/repo)."
+    )
+
+
 class Repository(models.Model):
-    url = models.URLField(unique=True)
+    url = models.CharField(max_length=2000, unique=True, validators=[_validate_repo_source])
     name = models.CharField(max_length=255)
     last_analyzed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

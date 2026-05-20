@@ -1,5 +1,4 @@
 import logging
-import os
 
 from celery.app.control import Control
 from django.shortcuts import get_object_or_404
@@ -14,10 +13,6 @@ from config.celery import app as celery_app
 from .models import ResearchSession
 from .serializers import ResearchSessionSerializer
 from .services import create_session
-
-
-def _is_valid_repo_source(value: str) -> bool:
-    return value.startswith(("https://github.com/", "http://github.com/")) or os.path.isabs(value)
 
 logger = logging.getLogger(__name__)
 
@@ -39,23 +34,14 @@ class SessionListCreateView(APIView):
         responses={201: ResearchSessionSerializer},
     )
     def post(self, request):
-        repo_url = request.data.get("repo_url", "").strip()
-        question = request.data.get("question", "").strip()
+        serializer = ResearchSessionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        errors = {}
-        if not repo_url:
-            errors["repo_url"] = "This field is required."
-        elif not _is_valid_repo_source(repo_url):
-            errors["repo_url"] = (
-                "Provide a GitHub URL (https://github.com/owner/repo) "
-                "or an absolute local path (/path/to/repo)."
-            )
-        if not question:
-            errors["question"] = "This field is required."
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-        session = create_session(repo_url=repo_url, question=question)
+        session = create_session(
+            repo_url=serializer.validated_data["repo_url"],
+            question=serializer.validated_data["question"],
+        )
         return Response(ResearchSessionSerializer(session).data, status=status.HTTP_201_CREATED)
 
 

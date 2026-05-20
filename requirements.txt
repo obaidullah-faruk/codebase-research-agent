@@ -26,5 +26,11 @@ langchain-aws>=0.2
 langchain-ollama>=0.2
 langgraph>=0.2
 
+# Static files
+whitenoise>=6.8
+
 # Config
 python-dotenv>=1.0.0
+
+# Dev — Celery worker auto-reload (watchmedo)
+watchdog>=4.0

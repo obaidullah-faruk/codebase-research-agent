@@ -1,7 +1,8 @@
 import logging
 
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiResponse
+from rest_framework import serializers
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -65,9 +66,16 @@ class SessionCancelView(APIView):
     @extend_schema(
         summary="Cancel a pending or running session",
         tags=["Sessions"],
+        request=None,
         responses={
-            200: OpenApiResponse(description="Session cancelled"),
-            400: OpenApiResponse(description="Session is not active"),
+            200: inline_serializer(
+                name="SessionCancelResponse",
+                fields={"detail": serializers.CharField()},
+            ),
+            400: inline_serializer(
+                name="SessionCancelError",
+                fields={"detail": serializers.CharField()},
+            ),
         },
     )
     def post(self, request, pk):

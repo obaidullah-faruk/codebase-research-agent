@@ -32,7 +32,7 @@ def run_research_task(self, session_id: str) -> None:
         session=session,
         kind=SessionLog.Kind.START,
         step=0,
-        data={"repo_url": repo_url, "question": session.question[:200]},
+        data={"repo_url": repo_url, "question": session.question},
     )
 
     try:

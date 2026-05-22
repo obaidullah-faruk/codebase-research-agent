@@ -2,6 +2,21 @@
 
 A Django REST API that accepts natural language questions about GitHub repositories and answers them using an LLM-powered agent. The agent runs as a Celery background task, uses LangGraph for orchestration, and persists findings to PostgreSQL.
 
+
+## Sample
+
+**New research session** — enter a GitHub URL and a natural language question, or pick a suggested prompt:
+
+![New research session](sample/sample_1.png)
+
+**Session activity** — live tool call timeline with timing for each step:
+
+![Session activity timeline](sample/sample_2.png)
+
+**Final answer** — the agent's synthesized answer with supporting code context:
+
+![Final answer](sample/sample_3.png)
+
 ---
 
 ## Quick Start (Docker)

@@ -8,10 +8,10 @@ A Django REST API that accepts natural language questions about GitHub repositor
 
 ```bash
 # 1. Copy the environment file and set your secrets
-cp .env.example .env
+cp backend/.env.example backend/.env
 
 # 2. Build images and start all 4 services (db, redis, web, worker)
-docker compose up --build -d
+cd backend && docker compose up --build -d
 
 # 3. Submit a question
 curl -s -X POST http://localhost:8000/api/v1/sessions/ \
@@ -85,12 +85,12 @@ Interactive API docs (Swagger UI): `http://localhost:8000/api/v1/docs/`
 
 ### Two-app structure
 
-**`research_sessions/`** — HTTP layer and data ownership
+**`backend/research_sessions/`** — HTTP layer and data ownership
 - `models.py`: `Repository`, `ResearchSession`, `Finding`, `ToolCallLog`, `SessionLog`
 - `views.py` → `services.py` → queues a Celery task; that is the only coupling point to `agent/`
 - Admin is read-only (all `has_add_permission` return `False`)
 
-**`agent/`** — All AI logic
+**`backend/agent/`** — All AI logic
 - `backends/`: `get_llm()` returns a `BaseChatModel` (`ChatOllama` or `ChatBedrock`)
 - `tools/`: 7 LangChain `StructuredTool` objects bound per-session
 - `graph/`: LangGraph state machine
@@ -146,7 +146,7 @@ Celery worker picks up task:
 
 ## Configuration Reference
 
-Copy `.env.example` to `.env` and adjust as needed. All settings have safe defaults for local development.
+Copy `backend/.env.example` to `backend/.env` and adjust as needed. All settings have safe defaults for local development.
 
 | Env var | Default | Effect |
 |---------|---------|--------|
@@ -205,7 +205,11 @@ No local GPU or model download required. Charges apply per token on the AWS acco
 
 ## Running Tests
 
+Run from the `backend/` directory:
+
 ```bash
+cd backend
+
 # Run the full test suite
 docker compose run --rm web python manage.py test tests
 
@@ -231,7 +235,7 @@ The test suite uses Django's test runner with an isolated PostgreSQL database. A
 
 URL: `http://localhost:8000/admin/`
 
-Log in with the superuser credentials set in `.env`. Create the superuser account with:
+Log in with the superuser credentials set in `backend/.env`. Create the superuser account (from `backend/`) with:
 
 ```bash
 docker compose run --rm web python manage.py createsuperuser --noinput

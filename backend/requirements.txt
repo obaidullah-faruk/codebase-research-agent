@@ -32,5 +32,10 @@ whitenoise>=6.8
 # Config
 python-dotenv>=1.0.0
 
+# Django Channels (WebSocket)
+channels>=4.3.0
+channels-redis>=4.3.0
+daphne>=4.2.1
+
 # Dev — Celery worker auto-reload (watchmedo)
 watchdog>=4.0

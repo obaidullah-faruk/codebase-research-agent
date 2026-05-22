@@ -5,6 +5,7 @@ from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from research_sessions.models import Finding, ResearchSession
+from research_sessions.channel_utils import push_session_event
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,12 @@ def _save_finding(
         evidence_snippet=evidence_snippet[:1000],
         search_term=search_term[:255],
     )
+    push_session_event(session_id, {
+        "type": "finding",
+        "file_path": file_path,
+        "note": note,
+        "confidence": max(0.0, min(1.0, confidence)),
+    })
     logger.debug("save_finding session=%s file=%r confidence=%.2f", session_id, file_path, confidence)
     return f"Finding saved for {file_path!r} (confidence={confidence:.2f})."
 

@@ -8,6 +8,7 @@ from langchain_core.messages import HumanMessage
 
 from agent.graph.builder import compile_graph
 from research_sessions.models import ResearchSession, SessionLog
+from research_sessions.channel_utils import push_session_event
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def run_research_task(self, session_id: str) -> None:
 
     session.status = ResearchSession.Status.RUNNING
     session.save(update_fields=["status"])
+    push_session_event(session_id, {"type": "status", "status": "running"})
     logger.info("[session=%s] started repo=%s", session_id, repo_url)
 
     SessionLog.objects.create(
@@ -61,6 +63,13 @@ def run_research_task(self, session_id: str) -> None:
         session.completed_at = timezone.now()
         session.save(update_fields=["answer", "tokens_used", "iterations", "status", "completed_at"])
 
+        push_session_event(session_id, {
+            "type": "answer",
+            "answer": session.answer,
+            "tokens_used": session.tokens_used,
+            "iterations": session.iterations,
+        })
+
         SessionLog.objects.create(
             session=session,
             kind=SessionLog.Kind.ANSWER,
@@ -73,11 +82,14 @@ def run_research_task(self, session_id: str) -> None:
         )
 
     except SoftTimeLimitExceeded:
-        _mark_failed(session, "Task timed out after 120 seconds.")
+        msg = "Task timed out after 120 seconds."
+        _mark_failed(session, msg)
+        push_session_event(session_id, {"type": "error", "error_message": msg})
         logger.warning("[session=%s] soft time limit exceeded", session_id)
 
     except Exception as exc:
         _mark_failed(session, str(exc))
+        push_session_event(session_id, {"type": "error", "error_message": str(exc)})
         SessionLog.objects.create(
             session=session,
             kind=SessionLog.Kind.ERROR,

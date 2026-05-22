@@ -9,6 +9,7 @@ from langgraph.prebuilt import ToolNode
 
 from .state import ResearchState
 from research_sessions.models import ResearchSession, SessionLog, ToolCallLog
+from research_sessions.channel_utils import push_session_event
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +113,12 @@ def make_tool_node(tools: list, session_id: str) -> callable:
                 step=step,
                 data={"tool": tool_call["name"], "duration_ms": duration_ms},
             )
+            push_session_event(session_id, {
+                "type": "log",
+                "kind": "tool_call",
+                "step": step,
+                "data": {"tool": tool_call["name"], "input": tool_call["args"], "output": output, "duration_ms": duration_ms},
+            })
             logger.info(
                 "[session=%s] tool=%s duration=%dms",
                 session_id, tool_call["name"], duration_ms,
